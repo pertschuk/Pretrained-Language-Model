@@ -8,6 +8,7 @@ import logging
 import os
 import random
 import json
+import csv
 
 import numpy as np
 import torch
@@ -67,6 +68,59 @@ def set_seed(args):
   torch.manual_seed(args.seed)
   if args.n_gpu > 0:
     torch.cuda.manual_seed_all(args.seed)
+
+
+class DataProcessor(object):
+  """Base class for data converters for sequence classification data sets."""
+
+  def get_train_examples(self, data_dir):
+    """Gets a collection of `InputExample`s for the train set."""
+    raise NotImplementedError()
+
+  def get_dev_examples(self, data_dir):
+    """Gets a collection of `InputExample`s for the dev set."""
+    raise NotImplementedError()
+
+  def get_test_examples(self, data_dir):
+    """Gets a collection of `InputExample`s for prediction."""
+    raise NotImplementedError()
+
+  def get_labels(self):
+    """Gets the list of labels for this data set."""
+    raise NotImplementedError()
+
+  @classmethod
+  def _read_tsv(cls, input_file, quotechar=None):
+    """Reads a tab separated value file."""
+    with open(input_file, "r") as f:
+      reader = csv.reader(f, delimiter="\t", quotechar=quotechar)
+      lines = []
+      for line in reader:
+        lines.append(line)
+      return lines
+
+
+class MSMarcoProcessor(DataProcessor):
+  """Processor for the MRPC data set (GLUE version)."""
+
+  def get_train_examples(self, data_dir):
+    """See base class."""
+    train_dataset_path = './triples.train.small.tsv'
+
+    examples = []
+
+    with open(train_dataset_path, 'r') as f:
+      for i, line in enumerate(f):
+        query, positive_doc, negative_doc = line.rstrip().split('\t')
+    return examples
+
+  def get_dev_examples(self, data_dir):
+    """See base class."""
+    return []
+
+  def get_test_examples(self, data_dir):
+    """See base class."""
+    return self.get_dev_examples(data_dir)
 
 
 def train(args, train_dataset, model, tokenizer):
@@ -294,9 +348,6 @@ def load_and_cache_examples(args, task, tokenizer, evaluate=False):
   else:
     logger.info("Creating features from dataset file at %s", args.data_dir)
     label_list = processor.get_labels()
-    if task in ['mnli', 'mnli-mm'] and args.model_type in ['roberta']:
-      # HACK(label indices are swapped in RoBERTa pretrained model)
-      label_list[1], label_list[2] = label_list[2], label_list[1]
     examples = processor.get_dev_examples(args.data_dir) if evaluate else processor.get_train_examples(args.data_dir)
     features = convert_examples_to_features(examples,
                                             tokenizer,
