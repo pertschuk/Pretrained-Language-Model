@@ -86,7 +86,7 @@ def train():
   ]
   optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
   scheduler = get_linear_schedule_with_warmup(optimizer,
-                                              num_warmup_steps=args.warmup * args.steps,
+                                              num_warmup_steps=float(args.warmup) * int(args.steps),
                                               num_training_steps=args.steps)
   fp16 = False
   try:
