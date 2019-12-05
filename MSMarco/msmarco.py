@@ -7,6 +7,26 @@ from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
 import pathlib
 
 
+class InputFeatures(object):
+  """A single set of features of data."""
+
+  def __init__(self, input_ids, input_mask, segment_ids, label_id, seq_length=None):
+    self.input_ids = input_ids
+    self.input_mask = input_mask
+    self.segment_ids = segment_ids
+    self.seq_length = seq_length
+    self.label_id = label_id
+
+
+def inputs_to_features(inputs):
+  input_ids, token_type_ids = inputs["input_ids"], inputs["token_type_ids"]
+  attention_mask = [1] * len(input_ids)
+  padding_length = args.max_length - len(input_ids)
+  input_ids = input_ids + ([0] * padding_length)
+  attention_mask = attention_mask + ([0] * padding_length)
+  token_type_ids = token_type_ids + ([0] * padding_length)
+  return input_ids, attention_mask, token_type_ids
+
 def load_and_cache_triples(triples_path: pathlib.Path, tokenizer):
   cache_path = triples_path.with_suffix('.bin')
 
@@ -21,16 +41,17 @@ def load_and_cache_triples(triples_path: pathlib.Path, tokenizer):
         query, relevant_example, negative_example = line.rstrip().split('\t')
 
         for passage in (relevant_example, negative_example):
-          features = tokenizer.encode_plus(
+          inputs = tokenizer.encode_plus(
             query,
             passage,
             add_special_tokens=True,
             max_length=args.max_length,
             return_tensors='pt'
           )
-          all_input_ids.append(features['input_ids'])
-          all_attention_mask.append(features['attention_mask'])
-          all_token_type_ids.append(features['token_type_ids'])
+          input_ids, attention_mask, token_type_ids = inputs_to_features(inputs)
+          all_input_ids.append(input_ids)
+          all_attention_mask.append(attention_mask)
+          all_token_type_ids.append(token_type_ids)
           if i * 2 > args.batch_size * args.steps:
             break
         all_labels.extend([1, 0])
