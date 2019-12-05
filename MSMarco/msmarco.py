@@ -169,7 +169,8 @@ def batch_input(all_features):
       input_ids_batch = []
       attention_mask_batch = []
       token_type_ids_batch = []
-  yield input_ids_batch, attention_mask_batch, token_type_ids_batch
+  if len(input_ids_batch) > 0:
+    yield input_ids_batch, attention_mask_batch, token_type_ids_batch
 
 
 def rank(model, device, all_features):
