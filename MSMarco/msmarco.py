@@ -183,6 +183,8 @@ def rank(model, device, all_features):
                      attention_mask=attention_mask,
                      token_type_ids=token_type_ids)[0]
       scores.extend(logits.detach().cpu().numpy())
+      import pdb
+      pdb.set_trace()
     return np.argsort(scores)[::-1]
 
 
