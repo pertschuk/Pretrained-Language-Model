@@ -7,6 +7,17 @@ from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
 import os
 import pathlib
 from collections import defaultdict
+import numpy as np
+
+
+def load_pretrained():
+  device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+  config = BertConfig.from_pretrained(args.model)
+  config.num_labels = 1  # regression
+  model = BertForSequenceClassification.from_pretrained(args.model, config=config)
+  model.to(device)
+  tokenizer = BertTokenizer.from_pretrained(args.model)
+  return device, model, tokenizer
 
 
 class InputFeatures(object):
@@ -73,13 +84,7 @@ def load_and_cache_triples(triples_path: pathlib.Path, tokenizer):
 
 
 def train():
-  device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-  config = BertConfig.from_pretrained(args.model)
-  config.num_labels = 1 # regression
-  model = BertForSequenceClassification.from_pretrained(args.model, config=config)
-  model.to(device)
-  tokenizer = BertTokenizer.from_pretrained(args.model)
-
+  device, model, tokenizer = load_pretrained()
   os.makedirs(args.save_dir, exist_ok=True)
 
   no_decay = ['bias', 'LayerNorm.weight']
@@ -148,8 +153,48 @@ def train():
   tokenizer.save_pretrained(args.save_dir)
 
 
+def batch_input(all_features):
+  input_ids = []
+  attention_mask = []
+  token_type_ids = []
+  i = 0
+  for input_ids, attention_mask, token_type_ids in all_features:
+    input_ids.append(input_ids)
+    attention_mask.append(attention_mask)
+    token_type_ids.append(token_type_ids)
+    i += 1
+    if i % args.batch_size == 0:
+      yield input_ids, attention_mask, token_type_ids
+      input_ids = []
+      attention_mask = []
+      token_type_ids = []
+  yield input_ids, attention_mask, token_type_ids
+
+
+def rank(model, device, all_features):
+  with torch.no_grad():
+    scores = []
+    for input_ids, attention_mask, token_type_ids in batch_input(all_features):
+      input_ids = torch.tensor(input_ids).to(device, non_blocking=True)
+      attention_mask = torch.tensor(attention_mask).to(device, non_blocking=True)
+      token_type_ids = torch.tensor(token_type_ids).to(device, non_blocking=True)
+      logits = model(input_ids,
+                     attention_mask=attention_mask,
+                     token_type_ids=token_type_ids)[0]
+      scores.extend(np.squeeze(logits.detach().cpu().numpy()))
+    return np.argsort(scores)[::-1]
+
+
+def encode(tokenizer, device, query, choices):
+  all_inputs = [tokenizer.encode_plus(
+    query, choice, add_special_tokens=True, max_length=args.max_length) for choice in choices]
+  all_features = [inputs_to_features(inputs) for inputs in all_inputs]
+  return all_features
+
+
 def eval():
   qrels = []
+  device, model, tokenizer = load_pretrained()
   with open('./qrels.dev.small', 'r') as qrels_file:
     for line in qrels_file:
       qid, cid = line.rstrip().split('\t')
@@ -161,6 +206,15 @@ def eval():
       qid, cid, query, candidate = line.rstrip().split('\t')
       label = 1 if (qid, cid) in qrels else 0
       dev_set[query].append((candidate, label))
+
+  total_mrr = 0
+  for i, (query, choices) in enumerate(dev_set):
+    candidates = [choice[0] for choice in choices]
+    labels = [choice[1] for choice in choices]
+    all_features = encode(tokenizer, device, query, candidates)
+    ranks = rank(model, device, all_features)
+    total_mrr += np.sum(np.array(labels) * ranks)
+    print(total_mrr / i)
 
 
 if __name__ == '__main__':
