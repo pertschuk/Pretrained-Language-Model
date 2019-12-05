@@ -177,6 +177,7 @@ def batch_input(all_features):
 
 
 def rank(model, device, all_features):
+  model.eval()
   with torch.no_grad():
     scores = []
     for input_ids, attention_mask, token_type_ids in batch_input(all_features):
