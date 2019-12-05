@@ -225,7 +225,7 @@ def eval():
     i += 1
     all_features = encode(tokenizer, device, query, candidates)
     ranks = rank(model, device, all_features)
-    total_mrr += 1/np.sum(np.array(labels) * ranks)
+    total_mrr += 1/(np.sum(np.array(labels) * ranks) + 1)
     eval_iterator.set_description("Current rank: %s" % ranks[np.argmax(labels)] + " MRR: %s" % (total_mrr / i) + "Total: %s " % len(choices))
 
 
