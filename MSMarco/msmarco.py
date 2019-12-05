@@ -219,6 +219,7 @@ def eval():
     candidates = [choice[0] for choice in choices]
     labels = [choice[1] for choice in choices]
     if sum(labels) == 0: continue
+    i += 1
     all_features = encode(tokenizer, device, query, candidates)
     ranks = rank(model, device, all_features)
     total_mrr += np.sum(np.array(labels) * ranks)
