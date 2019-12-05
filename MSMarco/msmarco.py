@@ -196,13 +196,13 @@ def encode(tokenizer, device, query, choices):
 def eval():
   qrels = []
   device, model, tokenizer = load_pretrained()
-  with open('./qrels.dev.small', 'r') as qrels_file:
+  with open('./qrels.dev.small.tsv', 'r') as qrels_file:
     for line in tqdm(qrels_file, desc="loading qrels"):
       qid, cid = line.rstrip().split('\t')
       qrels.append((qid, cid))
 
   dev_set = defaultdict(list)
-  with open('./top1000.dev', 'r') as dev_file:
+  with open('./top1000.dev.tsv', 'r') as dev_file:
     for line in tqdm(dev_file, desc='loading dev file'):
       qid, cid, query, candidate = line.rstrip().split('\t')
       label = 1 if (qid, cid) in qrels else 0
