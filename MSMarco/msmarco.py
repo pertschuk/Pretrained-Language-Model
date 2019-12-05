@@ -115,7 +115,7 @@ def train():
   train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
 
   global_step = 0
-  tr_loss, logging_loss = 0.0, 0.0
+  tr_loss, logging_loss, total_pred = 0.0, 0.0, 0.0
   model.zero_grad()
   epoch_iterator = tqdm(train_dataloader, desc="Iteration")
   for step, batch in enumerate(epoch_iterator):
@@ -127,6 +127,7 @@ def train():
               'labels': batch[3]}
     outputs = model(**inputs)
     loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
+    total_pred += np.squeeze(outputs[1].item())
 
     if args.gradient_accumulation_steps > 1:
       loss = loss / args.gradient_accumulation_steps
@@ -149,7 +150,7 @@ def train():
       model.zero_grad()
       global_step += 1
     if step > 0:
-      epoch_iterator.set_description("Loss: %s" % (tr_loss/step))
+      epoch_iterator.set_description("Loss: %s" % (tr_loss/step) + " Pred: %s " % (total_pred/step))
     if (step + 1) % args.save_steps == 0:
       model.save_pretrained(args.save_dir)
       tokenizer.save_pretrained(args.save_dir)
