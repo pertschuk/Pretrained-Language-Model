@@ -159,10 +159,10 @@ def batch_input(all_features):
   attention_mask = []
   token_type_ids = []
   i = 0
-  for input_ids, attention_mask, token_type_ids in all_features:
-    input_ids.append(input_ids)
-    attention_mask.append(attention_mask)
-    token_type_ids.append(token_type_ids)
+  for cur_input_ids, cur_attention_mask, cur_token_type_ids in all_features:
+    input_ids.append(cur_input_ids)
+    attention_mask.append(cur_attention_mask)
+    token_type_ids.append(cur_token_type_ids)
     i += 1
     if i % args.batch_size == 0:
       yield input_ids, attention_mask, token_type_ids
