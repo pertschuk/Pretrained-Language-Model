@@ -202,7 +202,7 @@ def eval():
       qrels.append((qid, cid))
 
   dev_set = defaultdict(list)
-  with open('./top1000.dev.tsv', 'r') as dev_file:
+  with open('./top1000.dev', 'r') as dev_file:
     for line in tqdm(dev_file, desc='loading dev file'):
       qid, cid, query, candidate = line.rstrip().split('\t')
       label = 1 if (qid, cid) in qrels else 0
