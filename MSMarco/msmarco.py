@@ -4,6 +4,7 @@ import torch
 from transformers import *
 from torch.utils.data import (DataLoader, RandomSampler, SequentialSampler,
                               TensorDataset)
+import os
 import pathlib
 
 
@@ -78,6 +79,8 @@ def train():
   model.to(device)
   tokenizer = BertTokenizer.from_pretrained(args.model)
 
+  os.makedirs(args.save_dir, exist_ok=True)
+
   no_decay = ['bias', 'LayerNorm.weight']
   optimizer_grouped_parameters = [
     {'params': [p for n, p in model.named_parameters() if not any(nd in n for nd in no_decay)],
@@ -138,8 +141,8 @@ def train():
     if step > 0:
       epoch_iterator.set_description("Loss: %s" % (tr_loss/step))
     if (step + 1) % args.save_steps == 0:
-      model.save_pretrained('./model.bin')
-  model.save_pretrained('./model.bin')
+      model.save_pretrained(args.save_dir)
+  model.save_pretrained(args.save_dir)
 
 
 if __name__ == '__main__':
@@ -160,5 +163,6 @@ if __name__ == '__main__':
                       help="Epsilon for Adam optimizer.")
   parser.add_argument("--max_grad_norm", default=1.0, type=float,
                       help="Max gradient norm.")
+  parser.add_argument("--save_dir", default='./msmarco')
   args = parser.parse_args()
   train()
