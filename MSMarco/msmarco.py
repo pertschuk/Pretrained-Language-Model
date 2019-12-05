@@ -65,7 +65,7 @@ def train():
   ]
   optimizer = AdamW(optimizer_grouped_parameters, lr=args.learning_rate, eps=args.adam_epsilon)
   scheduler = get_linear_schedule_with_warmup(optimizer,
-                                              num_warmup_steps=args.warmup_steps,
+                                              num_warmup_steps=args.warmup * args.steps,
                                               num_training_steps=args.steps)
   fp16 = False
   try:
@@ -122,6 +122,7 @@ if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument('--triple_train', default='triples.train.small.tsv')
   parser.add_argument('--steps', default=100000)
+  parser.add_argument('--warmup', default=0.1)
   parser.add_argument('--save_steps', default=1000)
   parser.add_argument('--model', default='bert-base-uncased')
   parser.add_argument('--batch_size', default=8)
