@@ -203,10 +203,13 @@ def eval():
 
   dev_set = defaultdict(list)
   with open('./top1000.dev', 'r') as dev_file:
+    i = 0
     for line in tqdm(dev_file, desc='loading dev file'):
       qid, cid, query, candidate = line.rstrip().split('\t')
       label = 1 if (qid, cid) in qrels else 0
       dev_set[query].append((candidate, label))
+      i += 1
+      if i > 500000: break
 
   total_mrr = 0
   eval_iterator = tqdm(enumerate(dev_set), desc="Evaluating")
