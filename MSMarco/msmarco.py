@@ -182,7 +182,7 @@ def rank(model, device, all_features):
       logits = model(input_ids,
                      attention_mask=attention_mask,
                      token_type_ids=token_type_ids)[0]
-      scores.extend(np.squeeze(logits.detach().cpu().numpy()))
+      scores.extend(logits.detach().cpu().numpy())
     return np.argsort(scores)[::-1]
 
 
