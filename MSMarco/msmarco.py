@@ -17,7 +17,7 @@ def load_and_cache_triples(triples_path: pathlib.Path, tokenizer):
     all_labels = []
 
     with triples_path.open('r') as f:
-      for i, line in enumerate(f):
+      for i, line in enumerate(tqdm(f, desc="Loading train triples")):
         query, relevant_example, negative_example = line.rstrip().split('\t')
 
         for passage in (relevant_example, negative_example):
