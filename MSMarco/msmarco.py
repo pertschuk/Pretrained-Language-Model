@@ -65,6 +65,8 @@ def load_and_cache_triples(triples_path: pathlib.Path, tokenizer):
             add_special_tokens=True,
             max_length=args.max_length,
           )
+          print("query: %s" % query)
+          print("passage: %s" % passage)
           input_ids, attention_mask, token_type_ids = inputs_to_features(inputs)
           all_input_ids.append(input_ids)
           all_attention_mask.append(attention_mask)
@@ -191,6 +193,8 @@ def rank(model, device, all_features):
 
 
 def encode(tokenizer, device, query, choices):
+  print("query: %s" % query)
+  print("choices: %s" % choices)
   all_inputs = [tokenizer.encode_plus(
     query, choice, add_special_tokens=True, max_length=args.max_length) for choice in choices]
   all_features = [inputs_to_features(inputs) for inputs in all_inputs]
