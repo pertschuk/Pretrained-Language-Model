@@ -13,9 +13,12 @@ from tqdm import tqdm
 
 def load_pretrained():
   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-  config = BertConfig.from_pretrained(args.model)
-  config.num_labels = 1  # regression
-  model = BertForSequenceClassification.from_pretrained(args.model, config=config)
+  if not args.eval:
+    config = BertConfig.from_pretrained(args.model)
+    config.num_labels = 1  # regression
+    model = BertForSequenceClassification.from_pretrained(args.model, config=config)
+  else:
+    model = BertForSequenceClassification.from_pretrained(args.model)
   model.to(device)
   tokenizer = BertTokenizer.from_pretrained(args.model)
   return device, model, tokenizer
