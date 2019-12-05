@@ -210,7 +210,7 @@ def eval():
       label = 1 if (qid, cid) in qrels else 0
       dev_set[query].append((candidate, label))
       i += 1
-      if i > 500000: break
+      if i > args.steps: break
 
   total_mrr = 0
   eval_iterator = tqdm(enumerate(dev_set.items()), desc="Evaluating")
@@ -221,6 +221,7 @@ def eval():
     all_features = encode(tokenizer, device, query, candidates)
     ranks = rank(model, device, all_features)
     total_mrr += np.sum(np.array(labels) * ranks)
+    print("Current rank: %s" % ranks[np.argmax(labels)])
     eval_iterator.set_description("MRR: %s" % (total_mrr / i))
 
 
