@@ -182,9 +182,7 @@ def rank(model, device, all_features):
       logits = model(input_ids,
                      attention_mask=attention_mask,
                      token_type_ids=token_type_ids)[0]
-      scores.extend(logits.detach().cpu().numpy())
-      import pdb
-      pdb.set_trace()
+      scores.extend(np.reshape(logits.detach().cpu().numpy(), (-1,)))
     return np.argsort(scores)[::-1]
 
 
@@ -218,6 +216,7 @@ def eval():
   for i, (query, choices) in eval_iterator:
     candidates = [choice[0] for choice in choices]
     labels = [choice[1] for choice in choices]
+    if sum(labels) == 0: continue
     all_features = encode(tokenizer, device, query, candidates)
     ranks = rank(model, device, all_features)
     total_mrr += np.sum(np.array(labels) * ranks)
