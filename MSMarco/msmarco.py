@@ -135,6 +135,7 @@ def train():
       scheduler.step()  # Update learning rate schedule
       model.zero_grad()
       global_step += 1
+    if step > 0:
       epoch_iterator.set_description("Loss: %s" % (tr_loss/step))
     if (step + 1) % args.save_steps == 0:
       model.save_pretrained('./model.bin')
