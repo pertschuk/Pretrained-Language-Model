@@ -13,12 +13,10 @@ from tqdm import tqdm
 
 def load_pretrained():
   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-  if not args.eval:
-    config = BertConfig.from_pretrained(args.model)
+  config = BertConfig.from_pretrained(args.model)
+  if not config.num_labels == 1:
     config.num_labels = 1  # regression
-    model = BertForSequenceClassification.from_pretrained(args.model, config=config)
-  else:
-    model = BertForSequenceClassification.from_pretrained(args.model)
+  model = BertForSequenceClassification.from_pretrained(args.model, config=config)
   model.to(device)
   tokenizer = BertTokenizer.from_pretrained(args.model)
   return device, model, tokenizer
@@ -87,8 +85,7 @@ def load_and_cache_triples(triples_path: pathlib.Path, tokenizer):
   return dataset
 
 
-def train():
-  device, model, tokenizer = load_pretrained()
+def train(device, model, tokenizer):
   os.makedirs(args.save_dir, exist_ok=True)
 
   no_decay = ['bias', 'LayerNorm.weight']
@@ -199,7 +196,7 @@ def encode(tokenizer, device, query, choices):
   return all_features
 
 
-def eval():
+def eval(device, model, tokenizer):
   qrels = []
   device, model, tokenizer = load_pretrained()
   with open('./qrels.dev.small.tsv', 'r') as qrels_file:
@@ -231,10 +228,19 @@ def eval():
     eval_iterator.set_description("Current rank: %s" % ranks[np.argmax(labels)] + " MRR: %s" % (total_mrr / i) + "Total: %s " % len(choices))
 
 
+def main():
+  device, model, tokenizer = load_pretrained()
+  if args.train:
+    train(device, model, tokenizer)
+  if args.eval:
+    eval(device, model, tokenizer)
+
+
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
   parser.add_argument('--triples_path', default='triples.train.small.tsv')
   parser.add_argument('--steps', default=100000, type=int)
+  parser.add_argument('--eval_steps', default=1000, type=int)
   parser.add_argument('--warmup', default=0.1, type=float)
   parser.add_argument('--save_steps', default=1000, type=int)
   parser.add_argument('--model', default='bert-base-uncased')
@@ -250,9 +256,7 @@ if __name__ == '__main__':
   parser.add_argument("--max_grad_norm", default=1.0, type=float,
                       help="Max gradient norm.")
   parser.add_argument("--save_dir", default='./msmarco')
+  parser.add_argument("--train", default=False, type=bool)
   parser.add_argument("--eval", default=False, type=bool)
   args = parser.parse_args()
-  if args.eval:
-    eval()
-  else:
-    train()
+  main()
