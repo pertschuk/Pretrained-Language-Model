@@ -213,8 +213,9 @@ def eval():
       if i > args.steps: break
 
   total_mrr = 0
-  eval_iterator = tqdm(enumerate(dev_set.items()), desc="Evaluating")
-  for i, (query, choices) in eval_iterator:
+  i = 0
+  eval_iterator = tqdm(dev_set.items(), desc="Evaluating")
+  for (query, choices) in eval_iterator:
     candidates = [choice[0] for choice in choices]
     labels = [choice[1] for choice in choices]
     if sum(labels) == 0: continue
@@ -222,6 +223,7 @@ def eval():
     ranks = rank(model, device, all_features)
     total_mrr += np.sum(np.array(labels) * ranks)
     print("Current rank: %s" % ranks[np.argmax(labels)])
+    i += 1
     eval_iterator.set_description("MRR: %s" % (total_mrr / i))
 
 
