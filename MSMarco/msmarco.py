@@ -155,21 +155,21 @@ def train():
 
 
 def batch_input(all_features):
-  input_ids = []
-  attention_mask = []
-  token_type_ids = []
+  input_ids_batch = []
+  attention_mask_batch = []
+  token_type_ids_batch = []
   i = 0
-  for cur_input_ids, cur_attention_mask, cur_token_type_ids in all_features:
-    input_ids.append(cur_input_ids)
-    attention_mask.append(cur_attention_mask)
-    token_type_ids.append(cur_token_type_ids)
+  for input_ids, attention_mask, token_type_ids in all_features:
+    input_ids_batch.append(input_ids)
+    attention_mask_batch.append(attention_mask)
+    token_type_ids_batch.append(token_type_ids)
     i += 1
     if i % args.batch_size == 0:
-      yield input_ids, attention_mask, token_type_ids
-      input_ids = []
-      attention_mask = []
-      token_type_ids = []
-  yield input_ids, attention_mask, token_type_ids
+      yield input_ids_batch, attention_mask_batch, token_type_ids_batch
+      input_ids_batch = []
+      attention_mask_batch = []
+      token_type_ids_batch = []
+  yield input_ids_batch, attention_mask_batch, token_type_ids_batch
 
 
 def rank(model, device, all_features):
