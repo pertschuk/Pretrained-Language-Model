@@ -75,6 +75,7 @@ def train():
   config = BertConfig.from_pretrained(args.model)
   config.num_labels = 1 # regression
   model = BertForSequenceClassification.from_pretrained(args.model, config=config)
+  model.to(device)
   tokenizer = BertTokenizer.from_pretrained(args.model)
 
   no_decay = ['bias', 'LayerNorm.weight']
