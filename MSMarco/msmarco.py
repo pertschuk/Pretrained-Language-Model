@@ -126,6 +126,7 @@ if __name__ == '__main__':
   parser.add_argument('--save_steps', default=1000)
   parser.add_argument('--model', default='bert-base-uncased')
   parser.add_argument('--batch_size', default=8)
+  parser.add_argument('--max_length', default=128)
   parser.add_argument('--gradient_accumulation_steps', default=1)
   parser.add_argument("--learning_rate", default=5e-5, type=float,
                       help="The initial learning rate for Adam.")
