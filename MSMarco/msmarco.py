@@ -8,6 +8,7 @@ import os
 import pathlib
 from collections import defaultdict
 import numpy as np
+from tqdm import tqdm
 
 
 def load_pretrained():
@@ -196,25 +197,26 @@ def eval():
   qrels = []
   device, model, tokenizer = load_pretrained()
   with open('./qrels.dev.small', 'r') as qrels_file:
-    for line in qrels_file:
+    for line in tqdm(qrels_file, desc="loading qrels"):
       qid, cid = line.rstrip().split('\t')
       qrels.append((qid, cid))
 
   dev_set = defaultdict(list)
   with open('./top1000.dev', 'r') as dev_file:
-    for line in dev_file:
+    for line in tqdm(dev_file, desc='loading dev file'):
       qid, cid, query, candidate = line.rstrip().split('\t')
       label = 1 if (qid, cid) in qrels else 0
       dev_set[query].append((candidate, label))
 
   total_mrr = 0
-  for i, (query, choices) in enumerate(dev_set):
+  eval_iterator = tqdm(enumerate(dev_set), desc="Evaluating")
+  for i, (query, choices) in eval_iterator:
     candidates = [choice[0] for choice in choices]
     labels = [choice[1] for choice in choices]
     all_features = encode(tokenizer, device, query, candidates)
     ranks = rank(model, device, all_features)
     total_mrr += np.sum(np.array(labels) * ranks)
-    print(total_mrr / i)
+    eval_iterator.set_description("MRR: %s" % (total_mrr / i))
 
 
 if __name__ == '__main__':
