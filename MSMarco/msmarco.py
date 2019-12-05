@@ -67,56 +67,55 @@ def train():
   scheduler = get_linear_schedule_with_warmup(optimizer,
                                               num_warmup_steps=args.warmup_steps,
                                               num_training_steps=args.steps)
-  if args.fp16:
-    try:
-      from apex import amp
-    except ImportError:
-      raise ImportError("Please install apex from https://www.github.com/nvidia/apex to use fp16 training.")
-    model, optimizer = amp.initialize(model, optimizer, opt_level=args.fp16_opt_level)
+  fp16 = False
+  try:
+    from apex import amp
+    fp16 = True
+    model, optimizer = amp.initialize(model, optimizer, opt_level='O1')
+  except ImportError:
+    print("Please install apex from https://www.github.com/nvidia/apex to use fp16 training.")
 
   train_dataset = load_and_cache_triples(args.triples_path, tokenizer)
   train_sampler = RandomSampler(train_dataset)
-  train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.train_batch_size)
+  train_dataloader = DataLoader(train_dataset, sampler=train_sampler, batch_size=args.batch_size)
 
   global_step = 0
   tr_loss, logging_loss = 0.0, 0.0
   model.zero_grad()
-  train_iterator = trange(int(args.num_train_epochs), desc="Epoch")
-  for _ in train_iterator:
-    epoch_iterator = tqdm(train_dataloader, desc="Iteration")
-    for step, batch in enumerate(epoch_iterator):
-      model.train()
-      batch = tuple(t.to(device) for t in batch)
-      inputs = {'input_ids': batch[0],
-                'attention_mask': batch[1],
-                'token_type_ids': batch[2], # change for distilbert
-                'labels': batch[3]}
-      outputs = model(**inputs)
-      loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
+  epoch_iterator = tqdm(train_dataloader, desc="Iteration")
+  for step, batch in enumerate(epoch_iterator):
+    model.train()
+    batch = tuple(t.to(device) for t in batch)
+    inputs = {'input_ids': batch[0],
+              'attention_mask': batch[1],
+              'token_type_ids': batch[2], # change for distilbert
+              'labels': batch[3]}
+    outputs = model(**inputs)
+    loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
 
-      if args.gradient_accumulation_steps > 1:
-        loss = loss / args.gradient_accumulation_steps
+    if args.gradient_accumulation_steps > 1:
+      loss = loss / args.gradient_accumulation_steps
 
-      if args.fp16:
-        with amp.scale_loss(loss, optimizer) as scaled_loss:
-          scaled_loss.backward()
+    if fp16:
+      with amp.scale_loss(loss, optimizer) as scaled_loss:
+        scaled_loss.backward()
+    else:
+      loss.backward()
+
+    tr_loss += loss.item()
+    if (step + 1) % args.gradient_accumulation_steps == 0:
+      if fp16:
+        torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), args.max_grad_norm)
       else:
-        loss.backward()
+        torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
 
-      tr_loss += loss.item()
-      if (step + 1) % args.gradient_accumulation_steps == 0:
-        if args.fp16:
-          torch.nn.utils.clip_grad_norm_(amp.master_params(optimizer), args.max_grad_norm)
-        else:
-          torch.nn.utils.clip_grad_norm_(model.parameters(), args.max_grad_norm)
-
-        optimizer.step()
-        scheduler.step()  # Update learning rate schedule
-        model.zero_grad()
-        global_step += 1
-        epoch_iterator.set_description("Loss: %s" % (tr_loss/step))
-      if (step + 1) % args.save_steps == 0:
-        model.save_pretrained('./model.bin')
+      optimizer.step()
+      scheduler.step()  # Update learning rate schedule
+      model.zero_grad()
+      global_step += 1
+      epoch_iterator.set_description("Loss: %s" % (tr_loss/step))
+    if (step + 1) % args.save_steps == 0:
+      model.save_pretrained('./model.bin')
 
 
 if __name__ == '__main__':
@@ -127,5 +126,14 @@ if __name__ == '__main__':
   parser.add_argument('--model', default='bert-base-uncased')
   parser.add_argument('--batch_size', default=8)
   parser.add_argument('--gradient_accumulation_steps', default=1)
+  parser.add_argument('--weight_decay', default=0.0)
+  parser.add_argument("--learning_rate", default=5e-5, type=float,
+                      help="The initial learning rate for Adam.")
+  parser.add_argument("--weight_decay", default=0.0, type=float,
+                      help="Weight deay if we apply some.")
+  parser.add_argument("--adam_epsilon", default=1e-8, type=float,
+                      help="Epsilon for Adam optimizer.")
+  parser.add_argument("--max_grad_norm", default=1.0, type=float,
+                      help="Max gradient norm.")
   args = parser.parse_args()
   train()
