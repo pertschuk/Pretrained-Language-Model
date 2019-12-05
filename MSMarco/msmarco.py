@@ -27,6 +27,7 @@ def inputs_to_features(inputs):
   token_type_ids = token_type_ids + ([0] * padding_length)
   return input_ids, attention_mask, token_type_ids
 
+
 def load_and_cache_triples(triples_path: pathlib.Path, tokenizer):
   cache_path = triples_path.with_suffix('.bin')
 
@@ -46,7 +47,6 @@ def load_and_cache_triples(triples_path: pathlib.Path, tokenizer):
             passage,
             add_special_tokens=True,
             max_length=args.max_length,
-            return_tensors='pt'
           )
           input_ids, attention_mask, token_type_ids = inputs_to_features(inputs)
           all_input_ids.append(input_ids)
