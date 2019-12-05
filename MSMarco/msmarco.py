@@ -192,7 +192,7 @@ def rank(model, device, all_features):
     return np.argsort(scores)[::-1]
 
 
-def encode(tokenizer, device, query, choices):
+def encode(tokenizer, query, choices):
   print("query: %s" % query)
   print("choices: %s" % choices)
   all_inputs = [tokenizer.encode_plus(
