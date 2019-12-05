@@ -30,7 +30,7 @@ def inputs_to_features(inputs):
 
 
 def load_and_cache_triples(triples_path: pathlib.Path, tokenizer):
-  cache_path = triples_path.with_suffix('.bin')
+  cache_path = triples_path.with_suffix('.bin-%s' % args.steps)
 
   if not cache_path.exists():
     all_input_ids = []
