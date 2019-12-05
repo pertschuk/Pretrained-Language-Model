@@ -142,7 +142,9 @@ def train():
       epoch_iterator.set_description("Loss: %s" % (tr_loss/step))
     if (step + 1) % args.save_steps == 0:
       model.save_pretrained(args.save_dir)
+      tokenizer.save_pretrained(args.save_dir)
   model.save_pretrained(args.save_dir)
+  tokenizer.save_pretrained(args.save_dir)
 
 
 if __name__ == '__main__':
