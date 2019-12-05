@@ -120,7 +120,7 @@ def train():
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser()
-  parser.add_argument('--triples_path', default='triples.train.small.tsv')
+  parser.add_argument('--triples_path', default=pathlib.Path('triples.train.small.tsv'))
   parser.add_argument('--steps', default=100000)
   parser.add_argument('--warmup', default=0.1)
   parser.add_argument('--save_steps', default=1000)
