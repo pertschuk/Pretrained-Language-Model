@@ -212,7 +212,7 @@ def eval(device, model, tokenizer):
       label = 1 if (qid, cid) in qrels else 0
       dev_set[query].append((candidate, label))
       i += 1
-      if i > args.steps: break
+      if i > args.eval_steps: break
 
   total_mrr = 0
   i = 0
