@@ -238,5 +238,9 @@ if __name__ == '__main__':
   parser.add_argument("--max_grad_norm", default=1.0, type=float,
                       help="Max gradient norm.")
   parser.add_argument("--save_dir", default='./msmarco')
+  parser.add_argument("--eval", default=False, type=bool)
   args = parser.parse_args()
-  train()
+  if args.eval:
+    eval()
+  else:
+    train()
