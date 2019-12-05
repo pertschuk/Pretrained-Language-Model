@@ -50,7 +50,7 @@ def load_and_cache_triples(triples_path: pathlib.Path, tokenizer):
 
 
 def train():
-  device = torch.device("cuda" if torch.cuda.is_available() and not args.no_cuda else "cpu")
+  device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
   config = BertConfig.from_pretrained(args.model)
   config.num_labels = 1 # regression
   model = BertForSequenceClassification.from_pretrained(args.model, config=config)
@@ -86,12 +86,11 @@ def train():
     epoch_iterator = tqdm(train_dataloader, desc="Iteration")
     for step, batch in enumerate(epoch_iterator):
       model.train()
-      batch = tuple(t.to(args.device) for t in batch)
+      batch = tuple(t.to(device) for t in batch)
       inputs = {'input_ids': batch[0],
                 'attention_mask': batch[1],
+                'token_type_ids': batch[2], # change for distilbert
                 'labels': batch[3]}
-      if args.model_type != 'distilbert':
-        inputs['token_type_ids'] = batch[2] if args.model_type in ['bert', 'xlnet'] else None
       outputs = model(**inputs)
       loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
 
