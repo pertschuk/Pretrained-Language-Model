@@ -52,8 +52,8 @@ def load_and_cache_triples(triples_path: pathlib.Path, tokenizer):
           all_input_ids.append(input_ids)
           all_attention_mask.append(attention_mask)
           all_token_type_ids.append(token_type_ids)
-          if i * 2 > args.batch_size * args.steps:
-            break
+        if i * 2 > args.batch_size * args.steps:
+          break
         all_labels.extend([1, 0])
 
     dataset = TensorDataset(
