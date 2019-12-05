@@ -212,7 +212,7 @@ def eval():
       if i > 500000: break
 
   total_mrr = 0
-  eval_iterator = tqdm(enumerate(dev_set), desc="Evaluating")
+  eval_iterator = tqdm(enumerate(dev_set.items()), desc="Evaluating")
   for i, (query, choices) in eval_iterator:
     candidates = [choice[0] for choice in choices]
     labels = [choice[1] for choice in choices]
