@@ -42,6 +42,9 @@ def inputs_to_features(inputs):
   token_type_ids = token_type_ids + ([0] * padding_length)
   return input_ids, attention_mask, token_type_ids
 
+def load_and_cache_eval(dev_set : pathlib.Path, qrels : pathlib.Path):
+  pass
+
 
 def load_and_cache_triples(triples_path: pathlib.Path, tokenizer):
   cache_path = triples_path.with_suffix('.bin-%s' % args.steps)
@@ -126,7 +129,7 @@ def train(device, model, tokenizer):
               'token_type_ids': batch[2], # change for distilbert
               'labels': batch[3]}
     outputs = model(**inputs)
-    loss = torch.log_softmax(outputs[1], dim=-1)
+    loss = outputs[0]
     # total_pred += torch.sum(outputs[1]).item() / args.batch_size
     logits = outputs[1].detach().cpu().numpy()
     correct += np.sum(np.argmax(logits, axis=1) == batch[3].detach().cpu().numpy())
