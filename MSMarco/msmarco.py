@@ -130,6 +130,8 @@ def train(device, model, tokenizer):
     # total_pred += torch.sum(outputs[1]).item() / args.batch_size
     logits = outputs[1].detach().cpu().numpy()
     correct += np.sum(np.argmax(logits, axis=1) == batch[3].detach().cpu().numpy())
+    import pdb
+    pdb.set_trace()
 
     if args.gradient_accumulation_steps > 1:
       loss = loss / args.gradient_accumulation_steps
