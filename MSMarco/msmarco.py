@@ -126,7 +126,9 @@ def train(device, model, tokenizer):
               'labels': batch[3]}
     outputs = model(**inputs)
     loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
-    total_pred += torch.sum(outputs[1]).item() / args.batch_size
+    # total_pred += torch.sum(outputs[1]).item() / args.batch_size
+    logits = outputs[1].detach().cpu().numpy()
+    correct = np.sum(np.argmax(logits, axis=1) == batch[3].detach().cpu().numpy())
 
     if args.gradient_accumulation_steps > 1:
       loss = loss / args.gradient_accumulation_steps
@@ -149,10 +151,12 @@ def train(device, model, tokenizer):
       model.zero_grad()
       global_step += 1
     if step > 0:
-      epoch_iterator.set_description("Loss: %s" % (tr_loss/step) + " Pred: %s " % (total_pred/step))
+      epoch_iterator.set_description("Loss: %s" % (tr_loss/step) + " Acc: %s " % (correct/(step*args.batch_size)))
     if (step + 1) % args.save_steps == 0:
+      print('saving model to %s' % args.save_dir)
       model.save_pretrained(args.save_dir)
       tokenizer.save_pretrained(args.save_dir)
+  print('saving model to %s' % args.save_dir)
   model.save_pretrained(args.save_dir)
   tokenizer.save_pretrained(args.save_dir)
 
