@@ -42,8 +42,49 @@ def inputs_to_features(inputs):
   token_type_ids = token_type_ids + ([0] * padding_length)
   return input_ids, attention_mask, token_type_ids
 
-def load_and_cache_eval(dev_set : pathlib.Path, qrels : pathlib.Path):
-  pass
+
+def load_and_cache_eval():
+  qrels = []
+  device, model, tokenizer = load_pretrained()
+  with open('./qrels.dev.small.tsv', 'r') as qrels_file:
+    for line in tqdm(qrels_file, desc="loading qrels"):
+      qid, _, cid, _ = line.rstrip().split('\t')
+      qrels.append((qid, cid))
+
+  dev_set = defaultdict(list)
+  with open('./top1000.dev', 'r') as dev_file:
+    i = 0
+    for line in tqdm(dev_file, desc='loading dev file'):
+      qid, cid, query, candidate = line.rstrip().split('\t')
+      label = 1 if (qid, cid) in qrels else 0
+      dev_set[query].append((candidate, label, qid))
+
+  eval_iterator = tqdm(dev_set.items(), desc="Creating eval set")
+  all_input_ids = []
+  all_attention_masks = []
+  all_token_type_ids = []
+  with open('qids.tsv', 'w') as qids_file:
+    for (query, choices) in eval_iterator:
+      candidates = [choice[0] for choice in choices]
+      labels = [choice[1] for choice in choices]
+      qids = [choice[2] for choice in choices]
+      if sum(labels) == 0: continue
+
+      all_features = encode(tokenizer, query, candidates)
+      for input_ids, attention_mask, token_type_ids in all_features:
+        all_input_ids.extend(input_ids)
+        all_attention_masks.extend(attention_mask)
+        all_token_type_ids.extend(token_type_ids)
+      for qid, label in zip (qids, labels):
+        qids_file.write(qid + '\t' + label + '\n')
+
+  dataset = TensorDataset(
+    torch.tensor(all_input_ids, dtype=torch.long),
+    torch.tensor(all_attention_masks, dtype=torch.long),
+    torch.tensor(all_token_type_ids, dtype=torch.long),
+  )
+  torch.save(dataset, './dev_set.bin')
+
 
 
 def load_and_cache_triples(triples_path: pathlib.Path, tokenizer):
@@ -209,35 +250,18 @@ def encode(tokenizer, query, choices):
 
 
 def eval(device, model, tokenizer):
-  qrels = []
-  device, model, tokenizer = load_pretrained()
-  with open('./qrels.dev.small.tsv', 'r') as qrels_file:
-    for line in tqdm(qrels_file, desc="loading qrels"):
-      qid, _, cid, _ = line.rstrip().split('\t')
-      qrels.append((qid, cid))
-
-  dev_set = defaultdict(list)
-  with open('./top1000.dev', 'r') as dev_file:
-    i = 0
-    for line in tqdm(dev_file, desc='loading dev file'):
-      qid, cid, query, candidate = line.rstrip().split('\t')
-      label = 1 if (qid, cid) in qrels else 0
-      dev_set[query].append((candidate, label))
-      i += 1
-      if i > args.eval_steps: break
-
-  total_mrr = 0
-  i = 0
-  eval_iterator = tqdm(dev_set.items(), desc="Evaluating")
-  for (query, choices) in eval_iterator:
-    candidates = [choice[0] for choice in choices]
-    labels = [choice[1] for choice in choices]
-    if sum(labels) == 0: continue
-    i += 1
-    all_features = encode(tokenizer, query, candidates)
-    scores, ranks = rank(model, device, all_features)
-    total_mrr += 1/(np.sum(np.array(labels) * ranks) + 1)
-    eval_iterator.set_description("Current rank: %s" % ranks[np.argmax(labels)] + " MRR: %s" % (total_mrr / i) + "Total: %s " % len(choices))
+  load_and_cache_eval()
+  # i = 0
+  # eval_iterator = tqdm(dev_set.items(), desc="Evaluating")
+  # for (query, choices) in eval_iterator:
+  #   candidates = [choice[0] for choice in choices]
+  #   labels = [choice[1] for choice in choices]
+  #   if sum(labels) == 0: continue
+  #   i += 1
+  #   all_features = encode(tokenizer, query, candidates)
+  #   scores, ranks = rank(model, device, all_features)
+  #   total_mrr += 1/(np.sum(np.array(labels) * ranks) + 1)
+  #   eval_iterator.set_description("Current rank: %s" % ranks[np.argmax(labels)] + " MRR: %s" % (total_mrr / i) + "Total: %s " % len(choices))
 
 
 def main():
