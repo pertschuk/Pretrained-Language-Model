@@ -115,6 +115,7 @@ def train(device, model, tokenizer):
 
   global_step = 0
   tr_loss, logging_loss, total_pred = 0.0, 0.0, 0.0
+  correct = 0
   model.zero_grad()
   epoch_iterator = tqdm(train_dataloader, desc="Iteration")
   for step, batch in enumerate(epoch_iterator):
@@ -128,7 +129,7 @@ def train(device, model, tokenizer):
     loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
     # total_pred += torch.sum(outputs[1]).item() / args.batch_size
     logits = outputs[1].detach().cpu().numpy()
-    correct = np.sum(np.argmax(logits, axis=1) == batch[3].detach().cpu().numpy())
+    correct += np.sum(np.argmax(logits, axis=1) == batch[3].detach().cpu().numpy())
 
     if args.gradient_accumulation_steps > 1:
       loss = loss / args.gradient_accumulation_steps
