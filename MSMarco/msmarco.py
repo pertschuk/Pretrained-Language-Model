@@ -200,7 +200,7 @@ def encode(tokenizer, query, choices):
   # print("query: %s" % query)
   # print("choices: %s" % choices)
   all_inputs = [tokenizer.encode_plus(
-    query, choice, add_special_tokens=True, max_length=args.max_length) for choice in choices]
+    query, choice.lower(), add_special_tokens=True, max_length=args.max_length) for choice in choices]
   all_features = [inputs_to_features(inputs) for inputs in all_inputs]
   return all_features
 
