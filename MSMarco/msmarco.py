@@ -126,7 +126,7 @@ def train(device, model, tokenizer):
               'token_type_ids': batch[2], # change for distilbert
               'labels': batch[3]}
     outputs = model(**inputs)
-    loss = outputs[0]  # model outputs are always tuple in transformers (see doc)
+    loss = torch.log_softmax(outputs[1], dim=-1)
     # total_pred += torch.sum(outputs[1]).item() / args.batch_size
     logits = outputs[1].detach().cpu().numpy()
     correct += np.sum(np.argmax(logits, axis=1) == batch[3].detach().cpu().numpy())
@@ -182,17 +182,19 @@ def batch_input(all_features):
 
 
 def rank(model, device, all_features):
-  model.eval()
+  # model.eval()
   with torch.no_grad():
     scores = []
     for input_ids, attention_mask, token_type_ids in batch_input(all_features):
-      input_ids = torch.tensor(input_ids).to(device, non_blocking=True)
+      input_ids = torch.tensor(input_ids, dtype=torch.long).to(device, non_blocking=True)
       attention_mask = torch.tensor(attention_mask).to(device, non_blocking=True)
       token_type_ids = torch.tensor(token_type_ids).to(device, non_blocking=True)
       logits = model(input_ids,
                      attention_mask=attention_mask,
                      token_type_ids=token_type_ids)[0]
       scores.extend(np.reshape(logits.detach().cpu().numpy()[:, 1], (-1,)))
+      import pdb
+      pdb.set_trace()
     return np.argsort(scores)[::-1]
 
 
