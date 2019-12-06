@@ -77,12 +77,12 @@ def load_and_cache_eval():
       for qid, label in zip (qids, labels):
         qids_file.write(str(qid) + '\t' + str(label) + '\n')
 
-  dataset = TensorDataset(
+  dev_set = TensorDataset(
     torch.tensor(all_input_ids, dtype=torch.long),
     torch.tensor(all_attention_masks, dtype=torch.long),
     torch.tensor(all_token_type_ids, dtype=torch.long),
   )
-  torch.save(dataset, './dev_set.bin')
+  torch.save(dev_set, './dev_set.bin')
 
 
 
