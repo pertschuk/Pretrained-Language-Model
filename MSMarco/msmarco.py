@@ -14,7 +14,7 @@ from tqdm import tqdm
 def load_pretrained():
   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
   config = BertConfig.from_pretrained(args.model)
-  if not config.num_labels == 1:
+  if not config.num_labels == 2:
     config.num_labels = 1  # regression
   model = BertForSequenceClassification.from_pretrained(args.model, config=config)
   model.to(device)
@@ -71,13 +71,13 @@ def load_and_cache_triples(triples_path: pathlib.Path, tokenizer):
           all_input_ids.append(input_ids)
           all_attention_mask.append(attention_mask)
           all_token_type_ids.append(token_type_ids)
-        all_labels.extend([1.0, 0.0])
+        all_labels.extend([1, 0])
 
     dataset = TensorDataset(
       torch.tensor(all_input_ids, dtype=torch.long),
       torch.tensor(all_attention_mask, dtype=torch.long),
       torch.tensor(all_token_type_ids, dtype=torch.long),
-      torch.tensor(all_labels, dtype=torch.float)
+      torch.tensor(all_labels, dtype=torch.long)
     )
     torch.save(dataset, str(cache_path))
 
@@ -187,7 +187,7 @@ def rank(model, device, all_features):
       logits = model(input_ids,
                      attention_mask=attention_mask,
                      token_type_ids=token_type_ids)[0]
-      scores.extend(np.reshape(logits.detach().cpu().numpy(), (-1,)))
+      scores.extend(np.reshape(logits.detach().cpu().numpy()[:, 1], (-1,)))
       print(scores)
     return np.argsort(scores)[::-1]
 
