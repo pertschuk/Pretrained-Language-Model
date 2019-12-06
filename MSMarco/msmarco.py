@@ -58,6 +58,8 @@ def load_and_cache_eval():
       qid, cid, query, candidate = line.rstrip().split('\t')
       label = 1 if (qid, cid) in qrels else 0
       dev_set[query].append((candidate, label, qid))
+      i += 1
+      if i > 400000: break
 
   eval_iterator = tqdm(dev_set.items(), desc="Creating eval set")
   all_input_ids = []
