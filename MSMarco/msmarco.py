@@ -78,7 +78,7 @@ def load_and_cache_eval():
         all_attention_masks.extend(attention_mask)
         all_token_type_ids.extend(token_type_ids)
       for qid, label in zip (qids, labels):
-        qids_file.write(qid + '\t' + label + '\n')
+        qids_file.write(str(qid) + '\t' + str(label) + '\n')
 
   dataset = TensorDataset(
     torch.tensor(all_input_ids, dtype=torch.long),
