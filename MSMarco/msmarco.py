@@ -195,7 +195,7 @@ def rank(model, device, all_features):
       scores.extend(np.reshape(logits.detach().cpu().numpy()[:, 1], (-1,)))
       import pdb
       pdb.set_trace()
-    return np.argsort(scores)[::-1]
+    return scores, np.argsort(scores)[::-1]
 
 
 def encode(tokenizer, query, choices):
@@ -234,7 +234,7 @@ def eval(device, model, tokenizer):
     if sum(labels) == 0: continue
     i += 1
     all_features = encode(tokenizer, query, candidates)
-    ranks = rank(model, device, all_features)
+    ranks, scores = rank(model, device, all_features)
     total_mrr += 1/(np.sum(np.array(labels) * ranks) + 1)
     import pdb
     pdb.set_trace()
