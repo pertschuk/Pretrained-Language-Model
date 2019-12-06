@@ -15,7 +15,7 @@ def load_pretrained():
   device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
   config = BertConfig.from_pretrained(args.model)
   if not config.num_labels == 2:
-    config.num_labels = 1  # regression
+    config.num_labels = 2  # regression
   model = BertForSequenceClassification.from_pretrained(args.model, config=config)
   model.to(device)
   tokenizer = BertTokenizer.from_pretrained(args.model)
