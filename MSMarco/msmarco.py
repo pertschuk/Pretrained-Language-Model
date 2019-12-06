@@ -154,7 +154,7 @@ def train(device, model, tokenizer):
       model.zero_grad()
       global_step += 1
     if step > 0:
-      epoch_iterator.set_description("Loss: %s" % (tr_loss/step) + " Acc: %s " % (correct/(step*args.batch_size)))
+      epoch_iterator.set_description("Loss: %s" % (tr_loss/step) + " Acc: %s " % (correct/((step+1)*args.batch_size)))
     if (step + 1) % args.save_steps == 0:
       print('saving model to %s' % args.save_dir)
       model.save_pretrained(args.save_dir)
