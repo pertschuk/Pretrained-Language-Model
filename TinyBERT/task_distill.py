@@ -41,6 +41,7 @@ from transformer.optimization import BertAdam
 from transformer.file_utils import WEIGHTS_NAME, CONFIG_NAME
 
 TRAIN_STEPS = 50000
+DEV_STEPS = 1000
 
 
 csv.field_size_limit(sys.maxsize)
@@ -142,7 +143,17 @@ class MSMarcoProcessor(DataProcessor):
 
   def get_dev_examples(self, data_dir):
     """See base class."""
-    return []
+    train_dataset_path = os.path.join(data_dir, './triples.dev.small.tsv')
+    examples = []
+
+    with open(train_dataset_path, 'r') as f:
+      for i, line in enumerate(f):
+        if i > DEV_STEPS:
+          break
+        query, positive_doc, negative_doc = line.rstrip().split('\t')
+        examples.append(self._create_example(query, positive_doc, str(1), 'train', i))
+        examples.append(self._create_example(query, negative_doc, str(0), 'train', i + 0.5))
+    return examples
 
   def get_test_examples(self, data_dir):
     """See base class."""
