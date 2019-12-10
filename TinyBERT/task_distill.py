@@ -16,8 +16,6 @@
 
 """BERT finetuning runner."""
 
-TRAIN_STEPS = 50000
-
 from __future__ import absolute_import, division, print_function
 
 import argparse
@@ -41,6 +39,9 @@ from transformer.modeling import TinyBertForSequenceClassification
 from transformer.tokenization import BertTokenizer
 from transformer.optimization import BertAdam
 from transformer.file_utils import WEIGHTS_NAME, CONFIG_NAME
+
+TRAIN_STEPS = 50000
+
 
 csv.field_size_limit(sys.maxsize)
 
