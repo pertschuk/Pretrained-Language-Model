@@ -125,7 +125,7 @@ class MSMarcoProcessor(DataProcessor):
     """See base class."""
     print('Converting to Train to tfrecord...')
 
-    train_dataset_path = './triples.train.small.tsv'
+    train_dataset_path = os.path.join(data_dir, './triples.train.small.tsv')
     examples = []
 
     with open(train_dataset_path, 'r') as f:
