@@ -16,6 +16,8 @@
 
 """BERT finetuning runner."""
 
+TRAIN_STEPS = 50000
+
 from __future__ import absolute_import, division, print_function
 
 import argparse
@@ -130,7 +132,7 @@ class MSMarcoProcessor(DataProcessor):
 
     with open(train_dataset_path, 'r') as f:
       for i, line in enumerate(f):
-        if i > 500000:
+        if i > TRAIN_STEPS:
           break
         query, positive_doc, negative_doc = line.rstrip().split('\t')
         examples.append(self._create_example(query, positive_doc, str(1), 'train', i))
@@ -760,6 +762,11 @@ def main():
                       type=int,
                       default=1,
                       help="Number of updates steps to accumulate before performing a backward/update pass.")
+
+  parser.add_argument('--num_train_examples',
+                      type=int,
+                      default=100000,
+                      help="number of training examples")
 
   # added arguments
   parser.add_argument('--aug_train',
