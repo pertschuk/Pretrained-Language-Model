@@ -21,7 +21,7 @@ def eval(model):
       query, passage, label = line.rstrip().split('\t')
       queries.append(query)
       candidates.append(passage)
-      labels.append(int(label))
+      labels.append(int(float(label)))
       i += 1
       if i % RERANK_NUM == 0:
         if sum(labels) == 0:

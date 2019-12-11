@@ -18,7 +18,7 @@ python3 task_distill.py --teacher_model ${FT_BERT_BASE_DIR} \
                        --do_lower_case
 
 #export TMP_TINYBERT_DIR=./tinybert-msmarco-ft
-export TINYBERT_DIR=./tinybert-msmarco-ft
+export TINYBERT_DIR=./tinybert-msmarco-ft-1
 mkdir TINYBERT_DIR
 python3 task_distill.py --pred_distill  \
                        --teacher_model ${FT_BERT_BASE_DIR} \
