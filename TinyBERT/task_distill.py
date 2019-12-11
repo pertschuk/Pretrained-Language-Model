@@ -894,11 +894,12 @@ def main():
     train_sampler = RandomSampler(train_data)
     train_dataloader = DataLoader(train_data, sampler=train_sampler, batch_size=args.train_batch_size)
 
-  eval_examples = processor.get_dev_examples(args.data_dir)
-  eval_features = convert_examples_to_features(eval_examples, label_list, args.max_seq_length, tokenizer, output_mode)
-  eval_data, eval_labels = get_tensor_data(output_mode, eval_features)
-  eval_sampler = SequentialSampler(eval_data)
-  eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=args.eval_batch_size)
+  if not task_name == 'msmarco':
+    eval_examples = processor.get_dev_examples(args.data_dir)
+    eval_features = convert_examples_to_features(eval_examples, label_list, args.max_seq_length, tokenizer, output_mode)
+    eval_data, eval_labels = get_tensor_data(output_mode, eval_features)
+    eval_sampler = SequentialSampler(eval_data)
+    eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=args.eval_batch_size)
 
   if not args.do_eval or args.teacher_eval:
     teacher_model = TinyBertForSequenceClassification.from_pretrained(args.teacher_model, num_labels=num_labels)
@@ -1064,25 +1065,27 @@ def main():
           logger.info("  Epoch = {} iter {} step".format(epoch_, global_step))
           logger.info("  Num examples = %d", len(eval_examples))
           logger.info("  Batch size = %d", args.eval_batch_size)
+          if task_name == 'msmarco':
+            pass
+          else:
+            student_model.eval()
 
-          student_model.eval()
+            loss = tr_loss / (step + 1)
+            cls_loss = tr_cls_loss / (step + 1)
+            att_loss = tr_att_loss / (step + 1)
+            rep_loss = tr_rep_loss / (step + 1)
 
-          loss = tr_loss / (step + 1)
-          cls_loss = tr_cls_loss / (step + 1)
-          att_loss = tr_att_loss / (step + 1)
-          rep_loss = tr_rep_loss / (step + 1)
+            result = {}
+            if args.pred_distill:
+              result = do_eval(student_model, task_name, eval_dataloader,
+                               device, output_mode, eval_labels, num_labels)
+            result['global_step'] = global_step
+            result['cls_loss'] = cls_loss
+            result['att_loss'] = att_loss
+            result['rep_loss'] = rep_loss
+            result['loss'] = loss
 
-          result = {}
-          if args.pred_distill:
-            result = do_eval(student_model, task_name, eval_dataloader,
-                             device, output_mode, eval_labels, num_labels)
-          result['global_step'] = global_step
-          result['cls_loss'] = cls_loss
-          result['att_loss'] = att_loss
-          result['rep_loss'] = rep_loss
-          result['loss'] = loss
-
-          result_to_file(result, output_eval_file)
+            result_to_file(result, output_eval_file)
 
           if not args.pred_distill:
             save_model = True
@@ -1099,6 +1102,9 @@ def main():
 
             if task_name in mcc_tasks and result['mcc'] > best_dev_acc:
               best_dev_acc = result['mcc']
+              save_model = True
+
+            if task_name == 'msmarco':
               save_model = True
 
           if save_model:
@@ -1152,6 +1158,11 @@ def main():
               logging.info(mox.file.list_directory('.', recursive=True))
               mox.file.copy_parallel(args.output_dir, args.data_url)
               mox.file.copy_parallel('.', args.data_url)
+
+            if args.pred_distill and task_name == 'msmarco':
+              from nboost.model.transformers import TransformersModel
+              model = TransformersModel(model_dir=args.output_dir, batch_size=args.batch_size)
+              eval_msmarco(model)
 
           student_model.train()
 

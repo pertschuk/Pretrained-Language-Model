@@ -7,7 +7,7 @@ export TMP_TINYBERT_DIR=./tinybert-msmarco
 export TASK_NAME=msmarco
 
 mkdir ./tinybert-msmarco
-python3 -m TinyBERT.task_distill --teacher_model ${FT_BERT_BASE_DIR} \
+python3 task_distill.py --teacher_model ${FT_BERT_BASE_DIR} \
                        --student_model ${GENERAL_TINYBERT_DIR} \
                        --data_dir ${TASK_DIR} \
                        --task_name ${TASK_NAME} \
