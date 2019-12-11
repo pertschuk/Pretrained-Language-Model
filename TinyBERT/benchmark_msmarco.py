@@ -13,6 +13,5 @@ def main():
         msmarco_queries.write(query + '\t' + ','.join(qrels[qid]) + '\n')
 
 
-
 if __name__ == '__main__':
   main()
