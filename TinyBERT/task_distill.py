@@ -41,7 +41,7 @@ from transformer.optimization import BertAdam
 from transformer.file_utils import WEIGHTS_NAME, CONFIG_NAME
 
 from nboost.model.transformers import TransformersModel
-from .msmarco import eval as eval_msmarco
+from msmarco import eval as eval_msmarco
 
 TRAIN_STEPS = 50000
 DEV_STEPS = 1000
