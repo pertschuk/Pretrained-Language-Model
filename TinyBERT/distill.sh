@@ -2,9 +2,9 @@
 
 export FT_BERT_BASE_DIR=./pt-bert-base-uncased-msmarco/
 export GENERAL_TINYBERT_DIR=./2nd_General_TinyBERT_4L_312D/
-export TASK_DIR=./glue_data/MRPC
-export TMP_TINYBERT_DIR=./tinybert-mrpc
-export TASK_NAME=mrpc
+export TASK_DIR=./data
+export TMP_TINYBERT_DIR=./tinybert-msmarco
+export TASK_NAME=msmarco
 
 mkdir ./tinybert-mrpc
 python3 task_distill.py --teacher_model ${FT_BERT_BASE_DIR} \
@@ -32,9 +32,12 @@ python3 task_distill.py --pred_distill  \
                        --max_seq_length 128 \
                        --train_batch_size 8
 
-export FT_BERT_BASE_DIR=./pt-bert-base-uncased-msmarco/
 python3 task_distill.py --teacher_model ${FT_BERT_BASE_DIR} \
-
+--student_model ${GENERAL_TINYBERT_DIR} \
+--teacher_eval \
+--data_dir ${TASK_DIR} \
+--task_name ${TASK_NAME} \
+--output_dir ${TMP_TINYBERT_DIR}
 
 export GLUE_DIR=./glue_data/
 export TASK_NAME=MRPC

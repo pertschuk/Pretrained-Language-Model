@@ -143,7 +143,7 @@ class MSMarcoProcessor(DataProcessor):
 
   def get_dev_examples(self, data_dir):
     """See base class."""
-    train_dataset_path = os.path.join(data_dir, './triples.dev.small.tsv')
+    train_dataset_path = os.path.join(data_dir, './triples.train.small.tsv')
     examples = []
 
     with open(train_dataset_path, 'r') as f:
@@ -151,8 +151,8 @@ class MSMarcoProcessor(DataProcessor):
         if i > DEV_STEPS:
           break
         query, positive_doc, negative_doc = line.rstrip().split('\t')
-        examples.append(self._create_example(query, positive_doc, str(1), 'train', i))
-        examples.append(self._create_example(query, negative_doc, str(0), 'train', i + 0.5))
+        examples.append(self._create_example(query, positive_doc, str(1), 'dev', i))
+        examples.append(self._create_example(query, negative_doc, str(0), 'dev', i + 0.5))
     return examples
 
   def get_test_examples(self, data_dir):
