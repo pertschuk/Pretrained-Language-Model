@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 
-export FT_BERT_BASE_DIR=./pt-bert-base-uncased-msmarco/
+export FT_BERT_BASE_DIR=./pt-bert-base-uncased-mrpc/
 export GENERAL_TINYBERT_DIR=./2nd_General_TinyBERT_4L_312D/
-export TASK_DIR=./data
-export TMP_TINYBERT_DIR=./tinybert-msmarco
-export TASK_NAME=msmarco
+export TASK_DIR=./glue_data/MRPC
+export TMP_TINYBERT_DIR=./tinybert-mrpc
+export TASK_NAME=mrpc
 
-mkdir ./tinybert-msmarco
+mkdir ./tinybert-mrpc
 python3 task_distill.py --teacher_model ${FT_BERT_BASE_DIR} \
                        --student_model ${GENERAL_TINYBERT_DIR} \
                        --data_dir ${TASK_DIR} \
@@ -17,7 +17,7 @@ python3 task_distill.py --teacher_model ${FT_BERT_BASE_DIR} \
                        --num_train_epochs 10 \
                        --do_lower_case
 
-export TINYBERT_DIR=./tinybert-msmarco-ft
+export TINYBERT_DIR=./tinybert-mrpc-ft
 mkdir TINYBERT_DIR
 python3 task_distill.py --pred_distill  \
                        --teacher_model ${FT_BERT_BASE_DIR} \
@@ -31,3 +31,14 @@ python3 task_distill.py --pred_distill  \
                        --eval_step 100 \
                        --max_seq_length 128 \
                        --train_batch_size 8
+
+export GLUE_DIR=./glue_data/
+export TASK_NAME=MRPC
+python3 run_glue.py   --model_type bert   \
+--model_name_or_path bert-base-uncased   \
+--task_name $TASK_NAME   --do_train   \
+--do_eval   --do_lower_case   \
+--data_dir $GLUE_DIR/$TASK_NAME   \
+--max_seq_length 128   --per_gpu_train_batch_size 32   \
+--learning_rate 2e-5   --num_train_epochs 3.0   \
+--output_dir /tmp/$TASK_NAME/

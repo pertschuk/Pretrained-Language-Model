@@ -912,12 +912,24 @@ def main():
   eval_sampler = SequentialSampler(eval_data)
   eval_dataloader = DataLoader(eval_data, sampler=eval_sampler, batch_size=args.eval_batch_size)
 
-  if not args.do_eval:
+  if not args.do_eval or args.teacher_eval:
     teacher_model = TinyBertForSequenceClassification.from_pretrained(args.teacher_model, num_labels=num_labels)
     teacher_model.to(device)
 
   student_model = TinyBertForSequenceClassification.from_pretrained(args.student_model, num_labels=num_labels)
   student_model.to(device)
+
+  if args.teacher_eval:
+    logger.info("***** Running evaluation on TEACHER *****")
+    logger.info("  Num examples = %d", len(eval_examples))
+    logger.info("  Batch size = %d", args.eval_batch_size)
+
+    teacher_model.eval()
+    result = do_eval(teacher_model, task_name, eval_dataloader,
+                     device, output_mode, eval_labels, num_labels)
+    logger.info("***** Eval results *****")
+    for key in sorted(result.keys()):
+      logger.info("  %s = %s", key, str(result[key]))
   if args.do_eval:
     logger.info("***** Running evaluation *****")
     logger.info("  Num examples = %d", len(eval_examples))
