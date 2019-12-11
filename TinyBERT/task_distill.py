@@ -1063,11 +1063,11 @@ def main():
         if (global_step + 1) % args.eval_step == 0:
           logger.info("***** Running evaluation *****")
           logger.info("  Epoch = {} iter {} step".format(epoch_, global_step))
-          logger.info("  Num examples = %d", len(eval_examples))
-          logger.info("  Batch size = %d", args.eval_batch_size)
           if task_name == 'msmarco':
-            pass
+            save_model = True
           else:
+            logger.info("  Num examples = %d", len(eval_examples))
+            logger.info("  Batch size = %d", args.eval_batch_size)
             student_model.eval()
 
             loss = tr_loss / (step + 1)
@@ -1087,25 +1087,23 @@ def main():
 
             result_to_file(result, output_eval_file)
 
-          if not args.pred_distill:
-            save_model = True
-          else:
-            save_model = False
-
-            if task_name in acc_tasks and result['acc'] > best_dev_acc:
-              best_dev_acc = result['acc']
+            if not args.pred_distill:
               save_model = True
+            else:
+              save_model = False
 
-            if task_name in corr_tasks and result['corr'] > best_dev_acc:
-              best_dev_acc = result['corr']
-              save_model = True
+              if task_name in acc_tasks and result['acc'] > best_dev_acc:
+                best_dev_acc = result['acc']
+                save_model = True
 
-            if task_name in mcc_tasks and result['mcc'] > best_dev_acc:
-              best_dev_acc = result['mcc']
-              save_model = True
+              if task_name in corr_tasks and result['corr'] > best_dev_acc:
+                best_dev_acc = result['corr']
+                save_model = True
 
-            if task_name == 'msmarco':
-              save_model = True
+              if task_name in mcc_tasks and result['mcc'] > best_dev_acc:
+                best_dev_acc = result['mcc']
+                save_model = True
+
 
           if save_model:
             logger.info("***** Save model *****")
@@ -1161,7 +1159,7 @@ def main():
 
             if args.pred_distill and task_name == 'msmarco':
               from nboost.model.transformers import TransformersModel
-              model = TransformersModel(model_dir=args.output_dir, batch_size=args.batch_size)
+              model = TransformersModel(model_dir=args.output_dir, batch_size=args.eval_batch_size)
               eval_msmarco(model)
 
           student_model.train()

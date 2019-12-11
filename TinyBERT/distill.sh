@@ -17,7 +17,8 @@ python3 task_distill.py --teacher_model ${FT_BERT_BASE_DIR} \
                        --num_train_epochs 10 \
                        --do_lower_case
 
-export TINYBERT_DIR=./tinybert-mrpc-ft
+#export TMP_TINYBERT_DIR=./tinybert-msmarco-ft
+export TINYBERT_DIR=./tinybert-msmarco-ft
 mkdir TINYBERT_DIR
 python3 task_distill.py --pred_distill  \
                        --teacher_model ${FT_BERT_BASE_DIR} \
@@ -30,7 +31,7 @@ python3 task_distill.py --pred_distill  \
                        --num_train_epochs  3  \
                        --eval_step 100 \
                        --max_seq_length 128 \
-                       --train_batch_size 8
+                       --train_batch_size 16
 
 python3 task_distill.py --teacher_model ${FT_BERT_BASE_DIR} \
 --student_model ${GENERAL_TINYBERT_DIR} \
