@@ -3,6 +3,7 @@ import numpy as np
 from tqdm import tqdm
 from nboost.types import Choice
 
+RERANK_NUM = 1000
 
 def eval(model):
   # load_and_cache_eval()
@@ -22,7 +23,7 @@ def eval(model):
       candidates.append(passage)
       labels.append(int(label))
       i += 1
-      if i % args.rerank_num == 0:
+      if i % RERANK_NUM == 0:
         if sum(labels) == 0:
           candidates = []
           labels = []
@@ -60,6 +61,6 @@ if __name__ == '__main__':
   parser.add_argument('--batch_size', default=8, type=int)
   parser.add_argument('--max_length', default=128, type=int)
   parser.add_argument("--model_class", default='bert_model')
-  parser.add_argument("--rerank_num", default=1000, type=int)
+  parser.add_argument("--rerank_num", default=RERANK_NUM, type=int)
   args = parser.parse_args()
   main()
