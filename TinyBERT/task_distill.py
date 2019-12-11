@@ -40,6 +40,9 @@ from transformer.tokenization import BertTokenizer
 from transformer.optimization import BertAdam
 from transformer.file_utils import WEIGHTS_NAME, CONFIG_NAME
 
+from nboost.model.transformers import TransformersModel
+from .msmarco import eval as eval_msmarco
+
 TRAIN_STEPS = 50000
 DEV_STEPS = 1000
 
@@ -140,24 +143,6 @@ class MSMarcoProcessor(DataProcessor):
         examples.append(self._create_example(query, positive_doc, str(1), 'train', i))
         examples.append(self._create_example(query, negative_doc, str(0), 'train', i + 0.5))
     return examples
-
-  def get_dev_examples(self, data_dir):
-    """See base class."""
-    train_dataset_path = os.path.join(data_dir, './triples.train.small.tsv')
-    examples = []
-
-    with open(train_dataset_path, 'r') as f:
-      for i, line in enumerate(f):
-        if i > DEV_STEPS:
-          break
-        query, positive_doc, negative_doc = line.rstrip().split('\t')
-        examples.append(self._create_example(query, positive_doc, str(1), 'dev', i))
-        examples.append(self._create_example(query, negative_doc, str(0), 'dev', i + 0.5))
-    return examples
-
-  def get_test_examples(self, data_dir):
-    """See base class."""
-    return self.get_dev_examples(data_dir)
 
   def get_labels(self):
     """See base class."""
@@ -938,12 +923,17 @@ def main():
     logger.info("  Num examples = %d", len(eval_examples))
     logger.info("  Batch size = %d", args.eval_batch_size)
 
-    student_model.eval()
-    result = do_eval(student_model, task_name, eval_dataloader,
-                     device, output_mode, eval_labels, num_labels)
-    logger.info("***** Eval results *****")
-    for key in sorted(result.keys()):
-      logger.info("  %s = %s", key, str(result[key]))
+    if task_name == 'msmarco':
+      from nboost.model.transformers import TransformersModel
+      model = TransformersModel(model_dir=args.output_dir, batch_size=args.batch_size)
+      eval_msmarco(model)
+    else:
+      student_model.eval()
+      result = do_eval(student_model, task_name, eval_dataloader,
+                       device, output_mode, eval_labels, num_labels)
+      logger.info("***** Eval results *****")
+      for key in sorted(result.keys()):
+        logger.info("  %s = %s", key, str(result[key]))
   else:
     logger.info("***** Running training *****")
     logger.info("  Num examples = %d", len(train_examples))

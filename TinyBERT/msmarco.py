@@ -40,6 +40,7 @@ def eval(model):
         candidates = []
         labels = []
         queries = []
+  return {"mrr" : (total_mrr / total)}
 
 
 def main():
