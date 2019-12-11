@@ -768,6 +768,9 @@ def main():
   parser.add_argument("--no_cuda",
                       action='store_true',
                       help="Whether not to use CUDA when available")
+  parser.add_argument("--teacher_eval",
+                      action='store_true',
+                      help="Whether to evaluate teacher")
   parser.add_argument('--seed',
                       type=int,
                       default=42,
