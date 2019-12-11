@@ -775,7 +775,7 @@ def main():
                       action='store_true')
   parser.add_argument('--eval_step',
                       type=int,
-                      default=50)
+                      default=500)
   parser.add_argument('--pred_distill',
                       action='store_true')
   parser.add_argument('--data_url',
