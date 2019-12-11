@@ -911,13 +911,17 @@ def main():
     logger.info("***** Running evaluation on TEACHER *****")
     logger.info("  Num examples = %d", len(eval_examples))
     logger.info("  Batch size = %d", args.eval_batch_size)
-
-    teacher_model.eval()
-    result = do_eval(teacher_model, task_name, eval_dataloader,
-                     device, output_mode, eval_labels, num_labels)
-    logger.info("***** Eval results *****")
-    for key in sorted(result.keys()):
-      logger.info("  %s = %s", key, str(result[key]))
+    if task_name == 'msmarco':
+      from nboost.model.transformers import TransformersModel
+      model = TransformersModel(model_dir=args.teacher_model, batch_size=args.batch_size)
+      eval_msmarco(model)
+    else:
+      teacher_model.eval()
+      result = do_eval(teacher_model, task_name, eval_dataloader,
+                       device, output_mode, eval_labels, num_labels)
+      logger.info("***** Eval results *****")
+      for key in sorted(result.keys()):
+        logger.info("  %s = %s", key, str(result[key]))
   if args.do_eval:
     logger.info("***** Running evaluation *****")
     logger.info("  Num examples = %d", len(eval_examples))
