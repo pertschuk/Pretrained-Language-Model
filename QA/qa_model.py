@@ -63,8 +63,6 @@ def run_squad(question, context):
 
   start_tok = int(np.argmax(start_logits))
   end_tok = int(np.argmax(end_logits[start_tok+1:])) + start_tok
-  import pdb
-  pdb.set_trace()
   return ' '.join(doc_tokens[tok_to_orig_index[start_tok]:tok_to_orig_index[end_tok]])
 
 
