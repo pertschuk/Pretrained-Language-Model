@@ -49,10 +49,11 @@ def run_squad(question, context):
   sequence_pair_added_tokens = tokenizer.max_len - tokenizer.max_len_sentences_pair
 
   encoded_dict = tokenizer.encode_plus(
-    truncated_query,
+    question,
     all_doc_tokens,
     max_length=max_seq_length,
-    return_tensors='pt'
+    return_tensors='pt',
+    add_special_tokens=True
   )
 
   model.eval()
