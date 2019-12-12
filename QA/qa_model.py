@@ -21,7 +21,7 @@ def run_squad(question, context):
   prev_is_whitespace = True
 
   # Split on whitespace so that different tokens may be attributed to their original position.
-  for c in context:
+  for c in context.lower():
     if _is_whitespace(c):
       prev_is_whitespace = True
     else:
@@ -49,7 +49,7 @@ def run_squad(question, context):
   sequence_pair_added_tokens = tokenizer.max_len - tokenizer.max_len_sentences_pair
 
   encoded_dict = tokenizer.encode_plus(
-    question,
+    question.lower(),
     all_doc_tokens,
     max_length=max_seq_length,
     return_tensors='pt'
