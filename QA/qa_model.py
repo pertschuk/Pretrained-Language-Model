@@ -58,14 +58,13 @@ def run_squad(question, context):
   model.eval()
   with torch.no_grad():
     start_logits, end_logits = model(input_ids=encoded_dict['input_ids'])
-    # add +2 for [CLS] and [SEP]
+    # add +2 for [CLS] and [SEP], and cut out last [SEP]
     start_logits = start_logits[0][len(truncated_query)+2:-1]
     end_logits = end_logits[0][len(truncated_query)+2:-1]
 
+  assert len(end_logits) == len(tok_to_orig_index)
   start_tok = int(np.argmax(start_logits))
   end_tok = int(np.argmax(end_logits[start_tok+1:])) + start_tok
-  import pdb
-  pdb.set_trace()
   return ' '.join(doc_tokens[tok_to_orig_index[start_tok]:tok_to_orig_index[end_tok]+1])
 
 
@@ -74,10 +73,10 @@ def test_squad():
   CONTEXT = '''
   The South Lake Union Streetcar is a streetcar route in Seattle, Washington, United States. Traveling 1.3 miles (2.1 km), it connects downtown to the South Lake Union neighborhood on Westlake Avenue, Terry Avenue, and Valley Street.
   '''
-  QUESTION = 'How old is Mark Zuckerberg?'
-  CONTEXT = '''
-    Mark Zuckerberg is 34 years old.
-    '''
+  # QUESTION = 'How old is Mark Zuckerberg?'
+  # CONTEXT = '''
+  #   Mark Zuckerberg is 34 years old.
+  #   '''
   print('Question: %s' % QUESTION)
   print('Answer %s' % run_squad(QUESTION, CONTEXT))
 
