@@ -53,7 +53,7 @@ def run_squad(question, context):
     all_doc_tokens,
     max_length=max_seq_length,
     return_overflowing_tokens=True,
-    truncation_strategy='only_second' if tokenizer.padding_side == "right" else 'only_first',
+    truncation_strategy='only_second',
     return_tensors='pt'
   )
 
