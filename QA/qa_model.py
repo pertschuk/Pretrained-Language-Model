@@ -52,8 +52,6 @@ def run_squad(question, context):
     question,
     all_doc_tokens,
     max_length=max_seq_length,
-    return_overflowing_tokens=True,
-    truncation_strategy='only_second',
     return_tensors='pt'
   )
 
