@@ -52,8 +52,7 @@ def run_squad(question, context):
     question,
     all_doc_tokens,
     max_length=max_seq_length,
-    return_tensors='pt',
-    add_special_tokens=True
+    return_tensors='pt'
   )
 
   model.eval()
