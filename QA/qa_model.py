@@ -58,8 +58,8 @@ def run_squad(question, context):
   model.eval()
   with torch.no_grad():
     start_logits, end_logits = model(input_ids=encoded_dict['input_ids'])
-    start_logits = start_logits[0][len(truncated_query):]
-    end_logits = end_logits[0][len(truncated_query):]
+    start_logits = start_logits[0][len(truncated_query)+1:]
+    end_logits = end_logits[0][len(truncated_query)+1:]
 
   start_tok = int(np.argmax(start_logits))
   end_tok = int(np.argmax(end_logits[start_tok+1:])) + start_tok
