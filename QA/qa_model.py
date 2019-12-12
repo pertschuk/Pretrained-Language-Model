@@ -49,7 +49,7 @@ def run_squad(question, context):
   sequence_pair_added_tokens = tokenizer.max_len - tokenizer.max_len_sentences_pair
 
   encoded_dict = tokenizer.encode_plus(
-    question,
+    truncated_query,
     all_doc_tokens,
     max_length=max_seq_length,
     return_tensors='pt'
@@ -58,10 +58,10 @@ def run_squad(question, context):
   model.eval()
   with torch.no_grad():
     start_logits, end_logits = model(input_ids=encoded_dict['input_ids'])
+    start_logits = start_logits[len(truncated_query):]
+    end_logits = end_logits[len(truncated_query):]
   start_tok = int(np.argmax(start_logits[0]))
   end_tok = int(np.argmax(end_logits[0][start_tok:])) + start_tok
-  import pdb
-  pdb.set_trace()
   return ' '.join(doc_tokens[tok_to_orig_index[start_tok]:tok_to_orig_index[end_tok]])
 
 
