@@ -1,6 +1,7 @@
 from transformers import *
 import torch
 import numpy as np
+import time
 
 MODEL = 'distilbert-base-uncased-distilled-squad'
 max_query_length = 64
@@ -15,6 +16,7 @@ def _is_whitespace(c):
 def run_squad(question, context):
   model = DistilBertForQuestionAnswering.from_pretrained(MODEL)
   tokenizer = DistilBertTokenizer.from_pretrained(MODEL)
+  start = time.time()
 
   doc_tokens = []
   char_to_word_offset = []
@@ -65,6 +67,7 @@ def run_squad(question, context):
   assert len(end_logits) == len(tok_to_orig_index)
   start_tok = int(np.argmax(start_logits))
   end_tok = int(np.argmax(end_logits[start_tok+1:])) + start_tok
+  print('Took %s seconds' % (time.time() - start))
   return ' '.join(doc_tokens[tok_to_orig_index[start_tok]:tok_to_orig_index[end_tok]+1])
 
 
