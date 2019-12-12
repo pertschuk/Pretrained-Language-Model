@@ -49,8 +49,8 @@ def run_squad(question, context):
   sequence_pair_added_tokens = tokenizer.max_len - tokenizer.max_len_sentences_pair
 
   encoded_dict = tokenizer.encode_plus(
-    truncated_query if tokenizer.padding_side == "right" else all_doc_tokens,
-    all_doc_tokens if tokenizer.padding_side == "right" else truncated_query,
+    truncated_query,
+    all_doc_tokens,
     max_length=max_seq_length,
     return_overflowing_tokens=True,
     truncation_strategy='only_second' if tokenizer.padding_side == "right" else 'only_first',
