@@ -66,7 +66,7 @@ def run_squad(question, context):
 
 
 def test_squad():
-  QUESTION = 'What is the South Lake Union Streetcar'
+  QUESTION = 'What is the South Lake Union Streetcar?'
   CONTEXT = '''
   The South Lake Union Streetcar is a streetcar route in Seattle, Washington, United States. Traveling 1.3 miles (2.1 km), it connects downtown to the South Lake Union neighborhood on Westlake Avenue, Terry Avenue, and Valley Street.
   '''
