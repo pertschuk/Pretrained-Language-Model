@@ -3,7 +3,7 @@
 export FT_BERT_BASE_DIR=./pt-bert-base-uncased-msmarco/
 export GENERAL_TINYBERT_DIR=./2nd_General_TinyBERT_4L_312D/
 export TASK_DIR=./data
-export TMP_TINYBERT_DIR=./tinybert-msmarco-10
+export TMP_TINYBERT_DIR=./tinybert-msmarco
 export TASK_NAME=msmarco
 
 mkdir $TMP_TINYBERT_DIR
@@ -18,8 +18,8 @@ python3 task_distill.py --teacher_model ${FT_BERT_BASE_DIR} \
                        --do_lower_case
 
 #export TMP_TINYBERT_DIR=./tinybert-msmarco-ft
-export TINYBERT_DIR=./tinybert-msmarco-ft
-mkdir TINYBERT_DIR
+export TINYBERT_DIR=./tinybert-msmarco-ft-1
+mkdir $TINYBERT_DIR
 python3 task_distill.py --pred_distill  \
                        --teacher_model ${FT_BERT_BASE_DIR} \
                        --student_model ${TMP_TINYBERT_DIR} \
